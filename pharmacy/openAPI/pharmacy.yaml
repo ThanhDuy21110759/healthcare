@@ -1,0 +1,350 @@
+openapi: 3.0.3
+info:
+  title: Pharmacy API
+  version: 1.0.1
+  description: |
+    API documentation for Pharmacy service.
+    Includes warehouse receipts export endpoint (versioned path, JSON response with base64 CSV by default).
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/v1/receipts/export:
+    get:
+      summary: Export receipts (CSV content wrapped in JSON Response)
+      description: |
+        Generates a CSV of warehouse receipts and their items for the given date range.
+        The controller returns a JSON wrapper containing either Base64-encoded CSV (default) or raw CSV text when `encoding=plain`.
+      parameters:
+        - in: query
+          name: start
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Start date (inclusive) in ISO format (YYYY-MM-DD).
+        - in: query
+          name: end
+          required: true
+          schema:
+            type: string
+            format: date
+          description: End date (inclusive) in ISO format (YYYY-MM-DD).
+        - in: query
+          name: encoding
+          required: false
+          schema:
+            type: string
+            enum: [base64, plain]
+            default: base64
+          description: Encoding strategy for CSV payload. `base64` (default) returns Base64 string; `plain` returns raw CSV text.
+      responses:
+        '200':
+          description: Successful export response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseString'
+              examples:
+                base64:
+                  summary: Base64 encoded CSV payload example
+                  value:
+                    status: OK
+                    message: "Export generated: receipts_2025-01-01_2025-12-31.csv"
+                    data: "cmVjZWlwdF9pZCxhdXRvX2NvZGUsaW52b2ljZV9udW1iZXIscmVjZWlwdF90eXBlLHN0b2NrX2tlZXBlcix3YXJlaG91c2VfY29kZSxzdXBwbGllcl9pZCxkZWJ0X2Ftb3VudCxyZWNlaXB0X2RhdGUsaW52b2ljZV9kYXRlLHRyYW5zcG9ydF9tZXRob2QsdHJhbnNwb3J0X3VuaXQsZGVsaXZlcmVyLHZhdF9yYXRl\nMSxQTkstMjAyNS0wMDAxLEhELTAwMSxOaOqhbXAga2hvIMSRw7RuIGRhbmggbcOqdWMsVuG7kSBUxrDGoW5nIFPGoW4sVE45OTksMTIzLDAsMjAyNS0wMS0xMCwsWGUgbcOheSxHcmFiLE5ndXnhu4VuIFbDom4gQSw1LjA="
+                plain:
+                  summary: Plain CSV payload example (encoding=plain)
+                  value:
+                    status: OK
+                    message: "Export generated: receipts_2025-01-01_2025-12-31.csv"
+                    data: |
+                      receipt_id,auto_code,invoice_number,receipt_type,stock_keeper,warehouse_code,supplier_id,debt_amount,receipt_date,invoice_date,transport_method,transport_unit,deliverer,vat_rate
+                      1,PNK-2025-0001,HD-001,Nhập kho từ danh mục,Võ Trường Sơn,TN999,123,0,2025-01-10,,Xe máy,Grab,Nguyễn Văn A,5.0
+                      item_id,receipt_id,product_code,product_name,import_quantity,lot_number,expiration_date,import_unit,conversion_rate,import_price,selling_price
+                      1,1,DQG00034598,Chorsamine-20,10,233232,2022-02-22,Hộp,30,30000,35000
+        '400':
+          description: Invalid date range (start after end or missing).
+        '500':
+          description: Internal server error.
+  /api/v1/receipts/{receiptId}:
+    get:
+      summary: Get a warehouse receipt by ID
+      parameters:
+        - in: path
+          name: receiptId
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Receipt identifier
+      responses:
+        '200':
+          description: Receipt found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseReceipt'
+        '400':
+          description: Invalid receiptId
+        '404':
+          description: Receipt not found
+  /api/v1/receipts/{receiptId}/items:
+    post:
+      summary: Add a single item to a receipt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WarehouseReceiptItemRequest'
+            examples:
+              sample:
+                value:
+                  productCode: DQG00034598
+                  productName: Chorsamine-20
+                  importQuantity: 10
+                  lotNumber: '233232'
+                  expirationDate: '2022-02-22'
+                  importUnit: 'Hộp'
+                  conversionRate: 30
+                  importPrice: 30000
+                  sellingPrice: 35000
+      parameters:
+        - in: path
+          name: receiptId
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Receipt identifier
+      responses:
+        '201':
+          description: Item created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseReceiptItem'
+        '400':
+          description: Invalid input
+        '404':
+          description: Receipt not found
+  /api/v1/receipts/{receiptId}/items/batch:
+    post:
+      summary: Add multiple items to a receipt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/WarehouseReceiptItemRequest'
+      parameters:
+        - in: path
+          name: receiptId
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Receipt identifier
+      responses:
+        '201':
+          description: Items created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseReceiptItemList'
+        '400':
+          description: Invalid input (empty or malformed)
+        '404':
+          description: Receipt not found
+  /api/v1/receipt-items/by-receipt/{receiptId}:
+    get:
+      summary: List items by receipt ID
+      description: Returns all `WarehouseReceiptItem` rows belonging to the given receipt.
+      parameters:
+        - in: path
+          name: receiptId
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Receipt identifier (must be positive)
+      responses:
+        '200':
+          description: Items found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WarehouseReceiptItem'
+        '400':
+          description: Invalid receiptId supplied
+  /api/v1/receipt-items/by-product/{productCode}:
+    get:
+      summary: List items by product code
+      description: Returns all `WarehouseReceiptItem` rows with the matching product code.
+      parameters:
+        - in: path
+          name: productCode
+          required: true
+          schema:
+            type: string
+          description: Product code value (trimmed, case-sensitive match)
+      responses:
+        '200':
+          description: Items found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WarehouseReceiptItem'
+        '400':
+          description: productCode missing or blank
+components:
+  schemas:
+    ResponseString:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status indicator (e.g. OK, ERROR).
+        message:
+          type: string
+          description: Human-readable message.
+        data:
+          type: string
+          description: Export CSV content (Base64 when encoding=base64; raw CSV when encoding=plain).
+      required: [status, message, data]
+    ResponseReceipt:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/WarehouseReceipt'
+      required: [status, message, data]
+    ResponseReceiptItem:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/WarehouseReceiptItem'
+      required: [status, message, data]
+    ResponseReceiptItemList:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WarehouseReceiptItem'
+      required: [status, message, data]
+    WarehouseReceiptItemRequest:
+      type: object
+      properties:
+        productCode:
+          type: string
+        productName:
+          type: string
+        importQuantity:
+          type: integer
+        lotNumber:
+          type: string
+        expirationDate:
+          type: string
+          format: date
+        importUnit:
+          type: string
+        conversionRate:
+          type: number
+          format: double
+        importPrice:
+          type: number
+          format: double
+        sellingPrice:
+          type: number
+          format: double
+      required: [productCode, productName, importQuantity]
+    WarehouseReceipt:
+      type: object
+      properties:
+        receipt_id:
+          type: integer
+          format: int64
+        auto_code:
+          type: string
+        invoice_number:
+          type: string
+        receipt_type:
+          type: string
+        stock_keeper:
+          type: string
+        warehouse_code:
+          type: string
+        supplier_id:
+          type: integer
+        debt_amount:
+          type: number
+          format: double
+        receipt_date:
+          type: string
+          format: date
+        invoice_date:
+          type: string
+          format: date
+        note:
+          type: string
+        transport_method:
+          type: string
+        transport_unit:
+          type: string
+        deliverer:
+          type: string
+        vat_rate:
+          type: number
+          format: double
+    WarehouseReceiptItem:
+      type: object
+      properties:
+        item_id:
+          type: integer
+          format: int64
+        receipt_id:
+          type: integer
+          format: int64
+        product_code:
+          type: string
+        product_name:
+          type: string
+        import_quantity:
+          type: integer
+        lot_number:
+          type: string
+        expiration_date:
+          type: string
+          format: date
+        import_unit:
+          type: string
+        conversion_rate:
+          type: number
+          format: double
+        import_price:
+          type: number
+          format: double
+        selling_price:
+          type: number
+          format: double
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
