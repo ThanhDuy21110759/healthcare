@@ -45,25 +45,25 @@ CREATE TABLE warehouse_receipt (
 
 #### Field description
 
-| Column | Description | Mô tả tiếng Việt |
-|--------|-------------|------------------|
-| receipt_id | Primary key | Mã phiếu nhập (PK) |
-| auto_code | Receipt code (generated) | Mã phiếu |
-| invoice_number | Supplier invoice number | Số hóa đơn |
-| receipt_type | Type of receipt | Loại phiếu nhập |
-| stock_keeper | Warehouse keeper | Thủ kho nhập |
-| warehouse_code | Target warehouse | Kho nhập |
-| supplier_id | Foreign key to supplier | Mã nhà cung cấp |
-| debt_amount | Amount owed | Công nợ |
-| receipt_date | Date of receipt | Ngày nhập |
-| invoice_date | Invoice date | Ngày hóa đơn |
-| note | Additional comments | Ghi chú |
-| transport_method | Transport type | Phương tiện vận chuyển |
-| transport_unit | Logistic carrier | Đơn vị vận chuyển |
-| deliverer | Person delivering goods | Người giao hàng |
-| vat_rate | VAT applied | VAT (%) |
-| created_at | Timestamp creation | Ngày tạo |
-| updated_at | Timestamp update | Ngày cập nhật |
+| Column           | Description              | Mô tả tiếng Việt       |
+| ---------------- | ------------------------ | ---------------------- |
+| receipt_id       | Primary key              | Mã phiếu nhập (PK)     |
+| auto_code        | Receipt code (generated) | Mã phiếu               |
+| invoice_number   | Supplier invoice number  | Số hóa đơn             |
+| receipt_type     | Type of receipt          | Loại phiếu nhập        |
+| stock_keeper     | Warehouse keeper         | Thủ kho nhập           |
+| warehouse_code   | Target warehouse         | Kho nhập               |
+| supplier_id      | Foreign key to supplier  | Mã nhà cung cấp        |
+| debt_amount      | Amount owed              | Công nợ                |
+| receipt_date     | Date of receipt          | Ngày nhập              |
+| invoice_date     | Invoice date             | Ngày hóa đơn           |
+| note             | Additional comments      | Ghi chú                |
+| transport_method | Transport type           | Phương tiện vận chuyển |
+| transport_unit   | Logistic carrier         | Đơn vị vận chuyển      |
+| deliverer        | Person delivering goods  | Người giao hàng        |
+| vat_rate         | VAT applied              | VAT (%)                |
+| created_at       | Timestamp creation       | Ngày tạo               |
+| updated_at       | Timestamp update         | Ngày cập nhật          |
 
 ---
 
@@ -107,30 +107,30 @@ CREATE TABLE warehouse_receipt_item (
 
 #### Field description
 
-| Column | Description | Mô tả tiếng Việt |
-|--------|-------------|------------------|
-| receipt_id | FK to `warehouse_receipt` | Mã phiếu nhập |
-| product_code | Standardized product ID | Mã ĐQG / Mã hàng hóa |
-| product_name | Name of product / medicine | Tên hàng hóa / tên thuốc |
-| registration_number | Registration / approval number | Số đăng ký |
-| active_ingredient | Main active ingredient | Hoạt chất chính |
-| declared_active_ingredient | Declared ingredient | Hoạt chất đăng ký |
-| concentration | Concentration value | Hàm lượng |
-| packing | Packaging format | Quy cách đóng gói |
-| manufacturer | Manufacturer | Hãng sản xuất |
-| origin_country | Country of origin | Nước sản xuất |
-| allow_interconnect | Boolean linking allowed | Cho phép liên thông |
-| product_group | Product category | Nhóm hàng hóa |
-| import_quantity | Quantity imported | Số lượng nhập |
-| lot_number | Production lot | Số lô |
-| expiration_date | Expiry date | Hạn sử dụng |
-| location | Warehouse placement | Vị trí trong kho |
-| import_unit | Packaging unit | Đơn vị nhập |
-| conversion_rate | Unit conversion ratio | Tỷ lệ quy đổi |
-| item_vat_rate | VAT applied | VAT (%) |
-| import_price | Purchase price | Giá nhập |
-| selling_price | Suggested retail price | Giá bán |
-| keywords | Search keywords | Từ khóa |
+| Column                     | Description                    | Mô tả tiếng Việt         |
+| -------------------------- | ------------------------------ | ------------------------ |
+| receipt_id                 | FK to `warehouse_receipt`      | Mã phiếu nhập            |
+| product_code               | Standardized product ID        | Mã ĐQG / Mã hàng hóa     |
+| product_name               | Name of product / medicine     | Tên hàng hóa / tên thuốc |
+| registration_number        | Registration / approval number | Số đăng ký               |
+| active_ingredient          | Main active ingredient         | Hoạt chất chính          |
+| declared_active_ingredient | Declared ingredient            | Hoạt chất đăng ký        |
+| concentration              | Concentration value            | Hàm lượng                |
+| packing                    | Packaging format               | Quy cách đóng gói        |
+| manufacturer               | Manufacturer                   | Hãng sản xuất            |
+| origin_country             | Country of origin              | Nước sản xuất            |
+| allow_interconnect         | Boolean linking allowed        | Cho phép liên thông      |
+| product_group              | Product category               | Nhóm hàng hóa            |
+| import_quantity            | Quantity imported              | Số lượng nhập            |
+| lot_number                 | Production lot                 | Số lô                    |
+| expiration_date            | Expiry date                    | Hạn sử dụng              |
+| location                   | Warehouse placement            | Vị trí trong kho         |
+| import_unit                | Packaging unit                 | Đơn vị nhập              |
+| conversion_rate            | Unit conversion ratio          | Tỷ lệ quy đổi            |
+| item_vat_rate              | VAT applied                    | VAT (%)                  |
+| import_price               | Purchase price                 | Giá nhập                 |
+| selling_price              | Suggested retail price         | Giá bán                  |
+| keywords                   | Search keywords                | Từ khóa                  |
 
 ---
 
@@ -217,8 +217,42 @@ VALUES (
 
 ---
 
+### 4.3 Insert into `warehouse_receipt_item` (Autonomous Import)
+
+_Allow inserting items without a corresponding receipt._
+
+```sql
+INSERT INTO warehouse_receipt_item (
+    product_code,
+    import_unit,
+    product_name,
+    product_group,
+    import_quantity,
+    import_price,
+    selling_price,
+    item_vat_rate,
+    expiration_date,
+    keywords
+)
+VALUES (
+    'DQG00098765',
+    'Hộp',
+    'Paracetamol 500mg',
+    'Thuốc giảm đau',
+    50,
+    12000,
+    15000,
+    5.0,
+    '2026-12-31',
+    'paracetamol; giảm đau; hạ sốt'
+);
+```
+
+---
+
 ## 5. Versioning
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | Initial | Base schema definition |
+| Version | Date       | Changes                                  |
+| ------- | ---------- | ---------------------------------------- |
+| 1.0     | 16/11/2025 | Base schema definition                   |
+| 2.0     | 5/12/2025  | Insert autonomous import without receipt |

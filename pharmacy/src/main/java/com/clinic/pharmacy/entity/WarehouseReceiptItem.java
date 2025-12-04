@@ -12,15 +12,16 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+
+import lombok.*;
 
 @Entity
 @Table(name = "warehouse_receipt_item")
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class WarehouseReceiptItem {
 
     @Id
@@ -29,7 +30,7 @@ public class WarehouseReceiptItem {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receipt_id", nullable = false)
+    @JoinColumn(name = "receipt_id")
     private WarehouseReceipt receipt;
 
     @Column(name = "product_code", length = 100)

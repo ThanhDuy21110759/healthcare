@@ -2,19 +2,21 @@ package com.clinic.pharmacy.service;
 
 import com.clinic.pharmacy.entity.WarehouseReceipt;
 import com.clinic.pharmacy.entity.WarehouseReceiptItem;
-import com.clinic.pharmacy.model.WarehouseReceiptItemRequest;
+import com.clinic.pharmacy.exception.BadRequestException;
+import com.clinic.pharmacy.exception.NotFoundException;
+import com.clinic.pharmacy.model.ReceiptItemCreateDTO;
+import com.clinic.pharmacy.model.ReceiptItemRequest;
 import com.clinic.pharmacy.repository.WarehouseReceiptItemRepository;
 import com.clinic.pharmacy.repository.WarehouseReceiptRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import static com.clinic.pharmacy.utils.ExceptionMessages.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,19 +29,39 @@ class ReceiptServiceImpl implements ReceiptService {
     public WarehouseReceipt getReceipt(Long receiptId) {
         validateReceiptId(receiptId);
         return receiptRepository.findById(receiptId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Receipt not found: " + receiptId));
+                .orElseThrow(() -> new NotFoundException(String.format(RECEIPT_NOT_FOUND, receiptId)));
+    }
+
+    @Override
+    public WarehouseReceiptItem createWarehouseReceiptItem(ReceiptItemCreateDTO request) {
+        Optional.ofNullable(request)
+                .orElseThrow(() -> new BadRequestException(REQUEST_BODY_REQUIRED));
+
+        WarehouseReceiptItem item = WarehouseReceiptItem.builder()
+                .productCode(request.getProductCode())
+                .importUnit(request.getImportUnit())
+                .productName(request.getProductName())
+                .productGroup(request.getProductGroup())
+                .importQuantity(request.getImportQuantity())
+                .importPrice(request.getImportPrice())
+                .sellingPrice(request.getSellingPrice())
+                .itemVatRate(request.getItemVatRate())
+                .expirationDate(request.getExpirationDate())
+                .keywords(request.getKeywords())
+                .build();
+
+        return itemRepository.save(item);
     }
 
     @Override
     public WarehouseReceiptItem addReceiptItem(Long receiptId,
-                                               WarehouseReceiptItemRequest request) {
+                                               ReceiptItemRequest request) {
         validateReceiptId(receiptId);
-        validateItemRequest(request);
+        Optional.ofNullable(request)
+                .orElseThrow(() -> new BadRequestException(REQUEST_BODY_REQUIRED));
 
         WarehouseReceipt receipt = receiptRepository.findById(receiptId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Receipt not found: " + receiptId));
+                .orElseThrow(() -> new NotFoundException(String.format(RECEIPT_NOT_FOUND, receiptId)));
 
         WarehouseReceiptItem item = WarehouseReceiptItem.builder()
                 .receipt(receipt)
@@ -58,19 +80,17 @@ class ReceiptServiceImpl implements ReceiptService {
     }
 
     @Override
-    public List<WarehouseReceiptItem> addReceiptItems(Long receiptId, Set<WarehouseReceiptItemRequest> requests) {
+    public List<WarehouseReceiptItem> addReceiptItems(Long receiptId, Set<ReceiptItemRequest> requests) {
         validateReceiptId(receiptId);
         Optional.ofNullable(requests)
                 .filter(set -> !set.isEmpty())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request set must not be empty"));
+                .orElseThrow(() -> new BadRequestException(REQUEST_SET_EMPTY));
 
         WarehouseReceipt receipt = receiptRepository.findById(receiptId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Receipt not found: " + receiptId));
+                .orElseThrow(() -> new NotFoundException(String.format(RECEIPT_NOT_FOUND, receiptId)));
 
         List<WarehouseReceiptItem> items = new ArrayList<>(requests.size());
-        for (WarehouseReceiptItemRequest req : requests) {
-            validateItemRequest(req);
+        for (ReceiptItemRequest req : requests) {
             WarehouseReceiptItem item = WarehouseReceiptItem.builder()
                     .receipt(receipt)
                     .productCode(req.getProductCode().trim())
@@ -92,24 +112,6 @@ class ReceiptServiceImpl implements ReceiptService {
     private void validateReceiptId(Long receiptId) {
         Optional.ofNullable(receiptId)
                 .filter(id -> id > 0)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "receiptId must be positive"));
-    }
-
-    private void validateItemRequest(WarehouseReceiptItemRequest request) {
-        Optional.ofNullable(request)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Request body is required"));
-
-        if (!StringUtils.hasText(request.getProductCode())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "productCode is required");
-        }
-        if (!StringUtils.hasText(request.getProductName())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "productName is required");
-        }
-        if (Optional.ofNullable(request.getImportQuantity()).filter(q -> q > 0).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "importQuantity must be positive");
-        }
+                .orElseThrow(() -> new BadRequestException(RECEIPT_ID_POSITIVE));
     }
 }

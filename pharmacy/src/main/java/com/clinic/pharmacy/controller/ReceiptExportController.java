@@ -2,8 +2,8 @@ package com.clinic.pharmacy.controller;
 
 import com.clinic.pharmacy.entity.WarehouseReceipt;
 import com.clinic.pharmacy.entity.WarehouseReceiptItem;
+import com.clinic.pharmacy.model.ReceiptItemRequest;
 import com.clinic.pharmacy.model.Response;
-import com.clinic.pharmacy.model.WarehouseReceiptItemRequest;
 import com.clinic.pharmacy.service.ReceiptExportService;
 import com.clinic.pharmacy.service.ReceiptService;
 import lombok.NonNull;
@@ -69,7 +69,7 @@ public class ReceiptExportController {
     @PostMapping(value = "/{receiptId}/items", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<@NonNull Response<WarehouseReceiptItem>> addReceiptItem(
             @PathVariable("receiptId") Long receiptId,
-            @RequestBody WarehouseReceiptItemRequest req) {
+            @RequestBody ReceiptItemRequest req) {
         WarehouseReceiptItem saved = receiptService.addReceiptItem(receiptId, req);
         Response<WarehouseReceiptItem> ok = Response.<WarehouseReceiptItem>builder()
                 .status(HttpStatus.CREATED)
@@ -82,7 +82,7 @@ public class ReceiptExportController {
     @PostMapping(value = "/{receiptId}/items/batch", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<@NonNull Response<List<WarehouseReceiptItem>>> addReceiptItems(
             @PathVariable("receiptId") Long receiptId,
-            @RequestBody Set<WarehouseReceiptItemRequest> requests) {
+            @RequestBody Set<ReceiptItemRequest> requests) {
         List<WarehouseReceiptItem> saved = receiptService.addReceiptItems(receiptId,
                 requests);
         Response<List<WarehouseReceiptItem>> ok = Response.<List<WarehouseReceiptItem>>builder()

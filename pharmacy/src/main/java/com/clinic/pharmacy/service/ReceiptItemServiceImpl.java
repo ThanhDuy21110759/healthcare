@@ -1,12 +1,11 @@
 package com.clinic.pharmacy.service;
 
 import com.clinic.pharmacy.entity.WarehouseReceiptItem;
+import com.clinic.pharmacy.exception.BadRequestException;
 import com.clinic.pharmacy.repository.WarehouseReceiptItemRepository;
-import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -19,15 +18,15 @@ class ReceiptItemServiceImpl implements ReceiptItemService {
     @Override
     public List<WarehouseReceiptItem> findByReceiptId(Long receiptId) {
         if (receiptId == null || receiptId <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "receiptId must be positive");
+            throw new BadRequestException("receiptId must be positive");
         }
         return repository.findByReceiptId(receiptId);
     }
 
     @Override
     public List<WarehouseReceiptItem> findByProductCode(String productCode) {
-        if (!StringUtils.isEmpty(productCode) || productCode.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "productCode is required");
+        if (!StringUtils.hasText(productCode)) {
+            throw new BadRequestException("productCode is required");
         }
         return repository.findByProductCode(productCode.trim());
     }
