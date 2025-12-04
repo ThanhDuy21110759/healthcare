@@ -1,10 +1,11 @@
 package com.clinic.pharmacy.utils;
 
+import lombok.RequiredArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import lombok.Getter;
 
-@Getter
+@RequiredArgsConstructor
 public class DataConvention {
 
     public static final Integer DEFAULT_INTEGER = 0;

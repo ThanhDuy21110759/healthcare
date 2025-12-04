@@ -38,12 +38,12 @@ paths:
             default: base64
           description: Encoding strategy for CSV payload. `base64` (default) returns Base64 string; `plain` returns raw CSV text.
       responses:
-        '200':
+        "200":
           description: Successful export response.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseString'
+                $ref: "#/components/schemas/ResponseString"
               examples:
                 base64:
                   summary: Base64 encoded CSV payload example
@@ -61,9 +61,9 @@ paths:
                       1,PNK-2025-0001,HD-001,Nhập kho từ danh mục,Võ Trường Sơn,TN999,123,0,2025-01-10,,Xe máy,Grab,Nguyễn Văn A,5.0
                       item_id,receipt_id,product_code,product_name,import_quantity,lot_number,expiration_date,import_unit,conversion_rate,import_price,selling_price
                       1,1,DQG00034598,Chorsamine-20,10,233232,2022-02-22,Hộp,30,30000,35000
-        '400':
+        "400":
           description: Invalid date range (start after end or missing).
-        '500':
+        "500":
           description: Internal server error.
   /api/v1/receipts/{receiptId}:
     get:
@@ -77,15 +77,15 @@ paths:
             format: int64
           description: Receipt identifier
       responses:
-        '200':
+        "200":
           description: Receipt found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseReceipt'
-        '400':
+                $ref: "#/components/schemas/ResponseReceipt"
+        "400":
           description: Invalid receiptId
-        '404':
+        "404":
           description: Receipt not found
   /api/v1/receipts/{receiptId}/items:
     post:
@@ -95,16 +95,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WarehouseReceiptItemRequest'
+              $ref: "#/components/schemas/WarehouseReceiptItemRequest"
             examples:
               sample:
                 value:
                   productCode: DQG00034598
                   productName: Chorsamine-20
                   importQuantity: 10
-                  lotNumber: '233232'
-                  expirationDate: '2022-02-22'
-                  importUnit: 'Hộp'
+                  lotNumber: "233232"
+                  expirationDate: "2022-02-22"
+                  importUnit: "Hộp"
                   conversionRate: 30
                   importPrice: 30000
                   sellingPrice: 35000
@@ -117,15 +117,15 @@ paths:
             format: int64
           description: Receipt identifier
       responses:
-        '201':
+        "201":
           description: Item created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseReceiptItem'
-        '400':
+                $ref: "#/components/schemas/ResponseReceiptItem"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: Receipt not found
   /api/v1/receipts/{receiptId}/items/batch:
     post:
@@ -137,7 +137,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/WarehouseReceiptItemRequest'
+                $ref: "#/components/schemas/WarehouseReceiptItemRequest"
       parameters:
         - in: path
           name: receiptId
@@ -147,15 +147,15 @@ paths:
             format: int64
           description: Receipt identifier
       responses:
-        '201':
+        "201":
           description: Items created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseReceiptItemList'
-        '400':
+                $ref: "#/components/schemas/ResponseReceiptItemList"
+        "400":
           description: Invalid input (empty or malformed)
-        '404':
+        "404":
           description: Receipt not found
   /api/v1/receipt-items/by-receipt/{receiptId}:
     get:
@@ -170,15 +170,15 @@ paths:
             format: int64
           description: Receipt identifier (must be positive)
       responses:
-        '200':
+        "200":
           description: Items found
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/WarehouseReceiptItem'
-        '400':
+                  $ref: "#/components/schemas/WarehouseReceiptItem"
+        "400":
           description: Invalid receiptId supplied
   /api/v1/receipt-items/by-product/{productCode}:
     get:
@@ -192,16 +192,48 @@ paths:
             type: string
           description: Product code value (trimmed, case-sensitive match)
       responses:
-        '200':
+        "200":
           description: Items found
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/WarehouseReceiptItem'
-        '400':
+                  $ref: "#/components/schemas/WarehouseReceiptItem"
+        "400":
           description: productCode missing or blank
+  /api/v1/receipt-items/items:
+    post:
+      summary: Create a standalone warehouse receipt item
+      description: Creates a `WarehouseReceiptItem` not bound to a specific receipt ID (standalone creation).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReceiptItemCreateDTO"
+            examples:
+              sample:
+                value:
+                  product_code: DQG00034598
+                  import_unit: "Hộp"
+                  product_name: Chorsamine-20
+                  product_group: Thuoc-khop
+                  import_quantity: 10
+                  import_price: 30000
+                  selling_price: 35000
+                  item_vat_rate: 5
+                  expiration_date: "2026-12-31"
+                  keywords: "khop, dau khop"
+      responses:
+        "201":
+          description: Item created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseReceiptItem"
+        "400":
+          description: Invalid input
 components:
   schemas:
     ResponseString:
@@ -225,7 +257,7 @@ components:
         message:
           type: string
         data:
-          $ref: '#/components/schemas/WarehouseReceipt'
+          $ref: "#/components/schemas/WarehouseReceipt"
       required: [status, message, data]
     ResponseReceiptItem:
       type: object
@@ -235,7 +267,7 @@ components:
         message:
           type: string
         data:
-          $ref: '#/components/schemas/WarehouseReceiptItem'
+          $ref: "#/components/schemas/WarehouseReceiptItem"
       required: [status, message, data]
     ResponseReceiptItemList:
       type: object
@@ -247,7 +279,7 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/WarehouseReceiptItem'
+            $ref: "#/components/schemas/WarehouseReceiptItem"
       required: [status, message, data]
     WarehouseReceiptItemRequest:
       type: object
@@ -344,6 +376,34 @@ components:
         selling_price:
           type: number
           format: double
+    ReceiptItemCreateDTO:
+      type: object
+      properties:
+        product_code:
+          type: string
+        import_unit:
+          type: string
+        product_name:
+          type: string
+        product_group:
+          type: string
+        import_quantity:
+          type: integer
+        import_price:
+          type: number
+          format: double
+        selling_price:
+          type: number
+          format: double
+        item_vat_rate:
+          type: number
+          format: double
+        expiration_date:
+          type: string
+          format: date
+        keywords:
+          type: string
+      required: [product_code, product_name, import_quantity, import_price]
   securitySchemes:
     basicAuth:
       type: http
