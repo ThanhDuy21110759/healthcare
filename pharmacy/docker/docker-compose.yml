@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: pharmacy-db
-    command: [ "postgres", "-c", "wal_level=logical" ]
+    command: ["postgres", "-c", "wal_level=logical"]
     networks:
       - pharmacy_network
     volumes:
@@ -20,7 +20,13 @@ services:
     image: redocly/cli:latest
     container_name: redocly_docs
     hostname: redocly_docs
-    command: ["build-docs", "/spec/pharmacy.yaml", "--output", "/spec/build/index.html"]
+    command:
+      [
+        "build-docs",
+        "/spec/pharmacy.yaml",
+        "--output",
+        "/spec/build/index.html",
+      ]
     volumes:
       - ../openAPI:/spec
     networks:

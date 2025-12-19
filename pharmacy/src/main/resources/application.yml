@@ -10,9 +10,13 @@ spring:
     url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/pharmacy-db}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgres}
+  flyway:
+    enabled: true
+    locations: classpath:db
+    baseline-on-migrate: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
