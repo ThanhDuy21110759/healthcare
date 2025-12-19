@@ -1,5 +1,7 @@
 package com.clinic.pharmacy.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,6 +24,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class WarehouseReceiptItem {
 
     @Id
@@ -31,6 +34,7 @@ public class WarehouseReceiptItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receipt_id")
+    @JsonBackReference
     private WarehouseReceipt receipt;
 
     @Column(name = "product_code", length = 100)

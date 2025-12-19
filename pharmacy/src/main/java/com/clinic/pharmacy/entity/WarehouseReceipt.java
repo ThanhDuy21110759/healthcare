@@ -1,5 +1,7 @@
 package com.clinic.pharmacy.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,6 +28,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class WarehouseReceipt {
 
     @Id
@@ -84,5 +87,6 @@ public class WarehouseReceipt {
     private OffsetDateTime updatedAt = OffsetDateTime.now();
 
     @OneToMany(mappedBy = "receipt", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<WarehouseReceiptItem> items = new ArrayList<>();
 }
