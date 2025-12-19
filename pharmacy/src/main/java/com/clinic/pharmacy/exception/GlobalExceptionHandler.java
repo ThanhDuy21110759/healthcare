@@ -1,6 +1,7 @@
 package com.clinic.pharmacy.exception;
 
 import com.clinic.pharmacy.model.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,10 +12,13 @@ import static com.clinic.pharmacy.utils.ExceptionMessages.UNEXPECTED_ERROR;
 import static com.clinic.pharmacy.utils.ExceptionMessages.VALIDATION_ERROR;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Response> handleBadRequest(BadRequestException ex) {
+        log.trace("Bad request error occurred", ex);
+
         Response body = Response.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(ex.getMessage())
@@ -33,6 +37,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Response> handleValidation(MethodArgumentNotValidException ex) {
+        log.trace("Validation error occurred", ex);
+
         String msg = ex.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
@@ -46,6 +52,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response> handleGeneric(Exception ex) {
+        log.trace("Unexpected error occurred", ex);
+
         Response body = Response.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .message(UNEXPECTED_ERROR)

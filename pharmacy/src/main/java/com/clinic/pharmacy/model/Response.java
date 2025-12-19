@@ -1,5 +1,7 @@
 package com.clinic.pharmacy.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @Setter
 @Builder
+@JsonInclude(Include.NON_NULL)
 public class Response<T> {
 
     private HttpStatus status;

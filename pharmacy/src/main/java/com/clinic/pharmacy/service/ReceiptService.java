@@ -17,4 +17,6 @@ public interface ReceiptService {
         Set<ReceiptItemRequest> requests);
 
     WarehouseReceiptItem createWarehouseReceiptItem(ReceiptItemCreateDTO request);
+
+    boolean isProductCodeUnique(Long receiptId, String productCode);
 }

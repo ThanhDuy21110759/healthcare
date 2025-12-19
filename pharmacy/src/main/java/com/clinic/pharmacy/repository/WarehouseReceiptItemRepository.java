@@ -12,4 +12,6 @@ public interface WarehouseReceiptItemRepository extends JpaRepository<WarehouseR
     List<WarehouseReceiptItem> findByReceiptId(Long receiptId);
 
     List<WarehouseReceiptItem> findByProductCode(String productCode);
+
+    boolean existsByReceiptIdAndProductCodeIgnoreCase(Long receiptId, String productCode);
 }

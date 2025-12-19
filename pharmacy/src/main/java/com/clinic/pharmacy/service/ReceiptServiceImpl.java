@@ -11,10 +11,7 @@ import com.clinic.pharmacy.repository.WarehouseReceiptRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static com.clinic.pharmacy.utils.ExceptionMessages.*;
 
@@ -63,9 +60,15 @@ class ReceiptServiceImpl implements ReceiptService {
         WarehouseReceipt receipt = receiptRepository.findById(receiptId)
                 .orElseThrow(() -> new NotFoundException(String.format(RECEIPT_NOT_FOUND, receiptId)));
 
+        String code = Optional.ofNullable(request.getProductCode())
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .orElseThrow(() -> new BadRequestException(PRODUCT_CODE_REQUIRED));
+
+        checkUniqueProductCode(receipt, code);
         WarehouseReceiptItem item = WarehouseReceiptItem.builder()
                 .receipt(receipt)
-                .productCode(request.getProductCode().trim())
+                .productCode(code)
                 .productName(request.getProductName().trim())
                 .importQuantity(request.getImportQuantity())
                 .lotNumber(request.getLotNumber())
@@ -90,10 +93,22 @@ class ReceiptServiceImpl implements ReceiptService {
                 .orElseThrow(() -> new NotFoundException(String.format(RECEIPT_NOT_FOUND, receiptId)));
 
         List<WarehouseReceiptItem> items = new ArrayList<>(requests.size());
+        HashSet<String> seenCodes = new HashSet<>();
         for (ReceiptItemRequest req : requests) {
+            String code = Optional.ofNullable(req.getProductCode())
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .orElseThrow(() -> new BadRequestException(PRODUCT_CODE_REQUIRED));
+
+            String normalized = code.toLowerCase();
+            if (!seenCodes.add(normalized)) {
+                throw new BadRequestException(String.format(DUPLICATE_PRODUCT_CODE_IN_REQUEST_SET, code));
+            }
+
+            checkUniqueProductCode(receipt, code);
             WarehouseReceiptItem item = WarehouseReceiptItem.builder()
                     .receipt(receipt)
-                    .productCode(req.getProductCode().trim())
+                    .productCode(code)
                     .productName(req.getProductName().trim())
                     .importQuantity(req.getImportQuantity())
                     .lotNumber(req.getLotNumber())
@@ -107,6 +122,22 @@ class ReceiptServiceImpl implements ReceiptService {
         }
 
         return itemRepository.saveAll(items);
+    }
+
+    private void checkUniqueProductCode(WarehouseReceipt receipt, String code) {
+        if (!isProductCodeUnique(receipt.getId(), code)) {
+            throw new BadRequestException(String.format(PRODUCT_CODE_EXISTS_IN_RECEIPT, code));
+        }
+    }
+
+    @Override
+    public boolean isProductCodeUnique(Long receiptId, String productCode) {
+        validateReceiptId(receiptId);
+        String code = Optional.ofNullable(productCode)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .orElseThrow(() -> new BadRequestException(PRODUCT_CODE_REQUIRED));
+        return !itemRepository.existsByReceiptIdAndProductCodeIgnoreCase(receiptId, code);
     }
 
     private void validateReceiptId(Long receiptId) {
