@@ -1,4 +1,4 @@
-package com.clinic.pharmacy.service;
+package com.clinic.pharmacy.service.impl;
 
 import com.clinic.pharmacy.entity.WarehouseReceipt;
 import com.clinic.pharmacy.entity.WarehouseReceiptItem;
@@ -8,6 +8,7 @@ import com.clinic.pharmacy.model.ReceiptItemCreateDTO;
 import com.clinic.pharmacy.model.ReceiptItemRequest;
 import com.clinic.pharmacy.repository.WarehouseReceiptItemRepository;
 import com.clinic.pharmacy.repository.WarehouseReceiptRepository;
+import com.clinic.pharmacy.service.ReceiptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

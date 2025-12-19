@@ -1,8 +1,9 @@
-package com.clinic.pharmacy.service;
+package com.clinic.pharmacy.service.impl;
 
 import com.clinic.pharmacy.entity.WarehouseReceiptItem;
 import com.clinic.pharmacy.exception.BadRequestException;
 import com.clinic.pharmacy.repository.WarehouseReceiptItemRepository;
+import com.clinic.pharmacy.service.ReceiptItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
